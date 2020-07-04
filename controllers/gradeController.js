@@ -1,10 +1,21 @@
-import { db } from '../models/index.js';
+//import { db } from '../models/index.js';
 import { logger } from '../config/logger.js';
-
+import { gradesModel } from '../models/grades.js'
 const create = async (req, res) => {
+  let request = req.body;
+
+  console.log(request)
   try {
+    const new_grade = await gradesModel.create(
+      { name: request['name'], 
+        subject: request['subject'], 
+        type: request['type'], 
+        value: request['value']
+      }
+    );
+
     res.send();
-    logger.info(`POST /grade - ${JSON.stringify()}`);
+    logger.info(`POST /grade - ${JSON.stringify(request)}`);
   } catch (error) {
     res
       .status(500)
@@ -16,13 +27,16 @@ const create = async (req, res) => {
 const findAll = async (req, res) => {
   const name = req.query.name;
 
-  //condicao para o filtro no findAll
   var condition = name
     ? { name: { $regex: new RegExp(name), $options: 'i' } }
     : {};
 
   try {
-    res.send();
+    const all_grades = await gradesModel.find(
+      condition
+    );
+
+    res.send(all_grades);
     logger.info(`GET /grade`);
   } catch (error) {
     res
@@ -36,7 +50,11 @@ const findOne = async (req, res) => {
   const id = req.params.id;
 
   try {
-    res.send();
+    const grade = await gradesModel.findOne(
+      {id: {id}}
+    );
+
+    res.send(grade);
 
     logger.info(`GET /grade - ${id}`);
   } catch (error) {
