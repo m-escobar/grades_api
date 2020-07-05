@@ -1,10 +1,9 @@
-//import { db } from '../models/index.js';
 import { logger } from '../config/logger.js';
 import { gradesModel } from '../models/grades.js'
+
 const create = async (req, res) => {
   let request = req.body;
 
-  console.log(request)
   try {
     const new_grade = await gradesModel.create(
       { name: request['name'], 
@@ -32,9 +31,7 @@ const findAll = async (req, res) => {
     : {};
 
   try {
-    const all_grades = await gradesModel.find(
-      condition
-    );
+    const all_grades = await gradesModel.find(condition);
 
     res.send(all_grades);
     logger.info(`GET /grade`);
@@ -50,10 +47,7 @@ const findOne = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const grade = await gradesModel.findOne(
-      {id: {id}}
-    );
-
+    const grade = await gradesModel.findById(id);
     res.send(grade);
 
     logger.info(`GET /grade - ${id}`);
@@ -71,8 +65,16 @@ const update = async (req, res) => {
   }
 
   const id = req.params.id;
+  const values = req.body;
 
   try {
+    const updatedGrade = await gradesModel.findByIdAndUpdate(
+      { _id: id },
+      { name: values['name'], subject: values['subject'], type: values['type'], value: values['value'] }
+    );
+
+      console.log(updatedGrade);
+    
     res.send({ message: 'Grade atualizado com sucesso' });
 
     logger.info(`PUT /grade - ${id} - ${JSON.stringify(req.body)}`);
@@ -83,9 +85,10 @@ const update = async (req, res) => {
 };
 
 const remove = async (req, res) => {
-  const id = req.params.id;
+  const id = req.params['id'];
 
   try {
+    const deletedGrade = await gradesModel.findByIdAndDelete({ _id: id });
     res.send({ message: 'Grade excluido com sucesso' });
 
     logger.info(`DELETE /grade - ${id}`);
@@ -99,6 +102,8 @@ const remove = async (req, res) => {
 
 const removeAll = async (req, res) => {
   const id = req.params.id;
+
+  const deletedAllGrades = await gradesModel.deleteMany({ });
 
   try {
     res.send({
