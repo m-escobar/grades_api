@@ -1,10 +1,20 @@
-import { db } from '../models/index.js';
 import { logger } from '../config/logger.js';
+import { gradesModel } from '../models/grades.js'
 
 const create = async (req, res) => {
+  let request = req.body;
+
   try {
+    const new_grade = await gradesModel.create(
+      { name: request['name'], 
+        subject: request['subject'], 
+        type: request['type'], 
+        value: request['value']
+      }
+    );
+
     res.send();
-    logger.info(`POST /grade - ${JSON.stringify()}`);
+    logger.info(`POST /grade - ${JSON.stringify(request)}`);
   } catch (error) {
     res
       .status(500)
@@ -16,13 +26,14 @@ const create = async (req, res) => {
 const findAll = async (req, res) => {
   const name = req.query.name;
 
-  //condicao para o filtro no findAll
   var condition = name
     ? { name: { $regex: new RegExp(name), $options: 'i' } }
     : {};
 
   try {
-    res.send();
+    const all_grades = await gradesModel.find(condition);
+
+    res.send(all_grades);
     logger.info(`GET /grade`);
   } catch (error) {
     res
@@ -36,7 +47,8 @@ const findOne = async (req, res) => {
   const id = req.params.id;
 
   try {
-    res.send();
+    const grade = await gradesModel.findById(id);
+    res.send(grade);
 
     logger.info(`GET /grade - ${id}`);
   } catch (error) {
@@ -53,8 +65,16 @@ const update = async (req, res) => {
   }
 
   const id = req.params.id;
+  const values = req.body;
 
   try {
+    const updatedGrade = await gradesModel.findByIdAndUpdate(
+      { _id: id },
+      { name: values['name'], subject: values['subject'], type: values['type'], value: values['value'] }
+    );
+
+      console.log(updatedGrade);
+    
     res.send({ message: 'Grade atualizado com sucesso' });
 
     logger.info(`PUT /grade - ${id} - ${JSON.stringify(req.body)}`);
@@ -65,9 +85,10 @@ const update = async (req, res) => {
 };
 
 const remove = async (req, res) => {
-  const id = req.params.id;
+  const id = req.params['id'];
 
   try {
+    const deletedGrade = await gradesModel.findByIdAndDelete({ _id: id });
     res.send({ message: 'Grade excluido com sucesso' });
 
     logger.info(`DELETE /grade - ${id}`);
@@ -81,6 +102,8 @@ const remove = async (req, res) => {
 
 const removeAll = async (req, res) => {
   const id = req.params.id;
+
+  const deletedAllGrades = await gradesModel.deleteMany({ });
 
   try {
     res.send({
